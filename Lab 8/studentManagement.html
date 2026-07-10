@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="description" content="COMP4650 Lab 8: Student Performance Management System">
+    <title>Student Performance Management System</title>
+    <link rel="stylesheet" href="studentManagement.css">
+</head>
+
+<body>
+    <div id="sidebarMenu" class="sidebarContainer">
+        <nav class="sidebarNav">
+            <h3 class="sidebarTitle">Navigation Desk</h3>
+            <ul class="sidebarList">
+                <li><a href="#dashboardSection" class="sidebarLink">Metrics Dashboard</a></li>
+                <li><a href="#recordsSection" class="sidebarLink">Student Database</a></li>
+                <li><a href="#formSection" class="sidebarLink">Enrollment Form</a></li>
+                <li><a href="#reportsSection" class="sidebarLink">Report Desk</a></li>
+            </ul>
+        </nav>
+    </div>
+
+    <header class="mainHeader">
+        <h1 class="headerTitle">Student Performance Management System</h1>
+        <p class="headerSubtitle">Fake Wentworth Records</p>
+        <nav class="topNavigation">
+            <ul class="topNavList">
+                <li><a href="#dashboardSection" class="topNavLink">Dashboard</a></li>
+                <li><a href="#recordsSection" class="topNavLink">Records Grid</a></li>
+                <li><a href="#formSection" class="topNavLink">Add Student</a></li>
+                <li><a href="#reportsSection" class="topNavLink">Reports Console</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="mainContent">
+        <div id="systemNotification" class="notificationBox hidden"></div>
+        <section id="dashboardSection" class="appSection">
+            <h2 class="sectionHeading">Performance Metrics</h2>
+            <div class="metricsGrid">
+
+                <div class="statCard">
+                    <span class="statLabel">Total Enrolled Students</span>
+                    <div id="totalStudents" class="statValue">0</div>
+                </div>
+
+                <div class="statCard">
+                    <span class="statLabel">Class Average Marks</span>
+                    <div id="averageMarks" class="statValue">0.0%</div>
+                </div>
+
+                <div class="statCard">
+                    <span class="statLabel">Highest Performing Student</span>
+                    <div id="highestStudent" class="statValue textTruncate">N/A</div>
+                </div>
+
+                <div class="statCard">
+                    <span class="statLabel">Lowest Performing Student</span>
+                    <div id="lowestStudent" class="statValue textTruncate">N/A</div>
+                </div>
+
+                <div class="statCard statusPass">
+                    <span class="statLabel">Passing Students Count</span>
+                    <div id="passingCount" class="statValue">0</div>
+                </div>
+
+                <div class="statCard statusFail">
+                    <span class="statLabel">Failing Students Count</span>
+                    <div id="metricFailingCount" class="statValue">0</div>
+                </div>
+            </div>
+
+            <fieldset class="distributionFieldset">
+                <legend class="fieldsetLegend">Letter Grade Distribution</legend>
+                <div class="distributionContainer">
+                    <div class="distributionBarItem"><span class="distLabel">A / A-</span><div class="distProgress"><div id="barGradeA" class="barFill gradeA" style="width: 0%"></div></div><span id="countGradeA" class="distCount">0</span></div>
+                    
+                    <div class="distributionBarItem"><span class="distLabel">B+ / B / B-</span><div class="distProgress"><div id="barGradeB" class="barFill gradeB" style="width: 0%"></div></div><span id="countGradeB" class="distCount">0</span></div>
+                    
+                    <div class="distributionBarItem"><span class="distLabel">C+ / C / C-</span><div class="distProgress"><div id="barGradeC" class="barFill gradeC" style="width: 0%"></div></div><span id="countGradeC" class="distCount">0</span></div>
+
+                    <div class="distributionBarItem"><span class="distLabel">D+ / D</span><div class="distProgress"><div id="barGradeD" class="barFill gradeD" style="width: 0%"></div></div><span id="countGradeD" class="distCount">0</span></div>
+                    
+                    <div class="distributionBarItem"><span class="distLabel">F</span><div class="distProgress"><div id="barGradeF" class="barFill gradeF" style="width: 0%"></div></div><span id="countGradeF" class="distCount">0</span></div>
+                </div>
+            </fieldset>
+        </section>
+
+        <section id="recordsSection" class="appSection">
+            <h2 class="sectionHeading">Student Academic Records Directory</h2>
+            
+            <div class="filterWorkspace">
+                <div class="filterGroup">
+                    <label for="searchBar">Search Query</label>
+                    <input type="text" id="searchBar" placeholder="Search by name, ID, or course...">
+                </div>
+
+                <div class="filterGroup">
+                    <label for="filterMajor">Filter Major</label>
+                    <select id="filterMajor">
+                        <option value="all">-- All Academic Programs --</option>
+                        <option value="Computer Science">Computer Science</option>
+                        <option value="Information Technology">Information Technology</option>
+                        <option value="Cybersecurity">Cybersecurity</option>
+                        <option value="Data Science">Data Science</option>
+                        <option value="Software Engineering">Software Engineering</option>
+                    </select>
+                </div>
+                <div class="filterGroup">
+                    <label for="filterStatus">Academic Standing</label>
+                    <select id="filterStatus">
+                        <option value="all">-- All Standings --</option>
+                        <option value="Pass">Passing Records</option>
+                        <option value="Fail">Failing Records</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="tableWrapper">
+                <table class="dataGridTable">
+                    <thead>
+                        <tr>
+                            <th>Student ID</th>
+                            <th>Full Name</th>
+                            <th>Major</th>
+                            <th>Assigned Course</th>
+                            <th>Marks</th>
+                            <th>Letter Grade</th>
+                            <th>Performance Meaning</th>
+                            <th>Pass/Fail</th>
+                        </tr>
+                    </thead>
+
+                    <!-- <tbody id="studentTableBody">
+                        <tr>
+                            <td>CS9109</td>
+                            <td>Jeremy Macek</td>
+                            <td>Computer Science</td>
+                            <td>Web Development</td>
+                            <td>95</td>
+                            <td><span class="badgeIndicator gradeDarkGreen">A</span></td>
+                            <td>Excellent/Outstanding</td>
+                            <td><span class="badgeIndicator statusPass">Pass</span></td>
+                            <td>
+                                <div class="actionButtonGroup">
+                                    <button class="actionButton editButton">Change</button>
+                                    <button class="actionButton deleteButton">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>CS1120</td>
+                            <td>Mikey Yentin</td>
+                            <td>Cybersecurity</td>
+                            <td>Network Programming</td>
+                            <td>50</td>
+                            <td><span class="badgeIndicator gradeDarkRed">F</span></td>
+                            <td>Failing</td>
+                            <td><span class="badgeIndicator statusFail">Fail</span></td>
+                            <td>
+                                <div class="actionButtonGroup">
+                                    <button class="actionButton editButton">Change</button>
+                                    <button class="actionButton deleteButton">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody> -->
+
+                </table>
+            </div>
+        </section>
+
+        <section id="formSection" class="appSection">
+            <h2 class="sectionHeading">Academic Record Enrollment Desk</h2>
+            <form id="addStudentForm" autocomplete="off" novalidate>
+
+                <fieldset class="formFieldset">
+                    <legend class="fieldsetLegend">Identity and Core Program Declarations</legend>
+                    <div class="formGrid">
+                        <div class="formGroup">
+                            <label for="studentName"><strong>Student Full Name *</strong></label>
+                            <input type="text" id="studentName" required placeholder="-- John Doe --">
+                        </div>
+
+                        <div class="formGroup">
+                            <label for="studentMajor"><strong>Academic Program / Major *</strong></label>
+                            <select id="studentMajor" required>
+                                <option value="">-- Choose Major --</option>
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="Information Technology">Information Technology</option>
+                                <option value="Cybersecurity">Cybersecurity</option>
+                                <option value="Data Science">Data Science</option>
+                                <option value="Software Engineering">Software Engineering</option>
+                            </select>
+                        </div>
+
+                        <div class="formGroup">
+                            <label for="studentCourse"><strong>Academic Course Assignment *</strong></label>
+                            <select id="studentCourse" required>
+                                <option value="">-- Awaiting Program Selection --</option>
+                                </select>
+                        </div>
+
+                        <div class="formGroup">
+                            <label for="studentMarks"><strong>Evaluated Marks (0 - 100) *</strong></label>
+                            <input type="number" id="studentMarks" min="0" max="100" required placeholder="-- 85 --">
+                        </div>
+                    </div>
+                </fieldset>
+
+                <div class="centerElement">
+                    <button type="submit" class="actionControlButton submitButton">Send Record to Database</button>
+                </div>
+            </form>
+        </section>
+
+        <section id="reportsSection" class="appSection">
+            <h2 class="sectionHeading">Import & Export Hub</h2>
+            <div class="utilityFlexGrid">
+                
+                <fieldset class="utilityBox">
+                    <legend class="fieldsetLegend">Data Export</legend>
+                    <p class="utilityDescription">Create PDFs or Spreadsheets build from database entries.</p> 
+                    <div class="utilityButtonGroup">
+                        <button id="ButtonExportPdf" class="actionControlButton pdfButton">Create PDF Report</button>
+                        <button id="ButtonExportExcel" class="actionControlButton excelButton">Create Excel Sheet Report</button>
+                    </div>
+                </fieldset>
+
+                <fieldset class="utilityBox">
+                    <legend class="fieldsetLegend">Batch Import Engine</legend>
+                    <p class="utilityDescription">Upload Excel spreadsheets to feed external data tables directly into MongoDB.</p>
+                    <div class="importUploadZone">
+                        <input type="file" id="excelImportFile" accept=".xlsx, .xls" class="hiddenFileInput">
+                        <label for="excelImportFile" class="customUploadWrapper">
+                            <span class="uploadIcon">&#128194;</span>
+                            <span class="uploadText">Click to upload Excel file</span>
+                        </label>
+                    </div>
+                </fieldset>
+
+            </div>
+        </section>
+    </main>
+
+    <div id="editStudentModal" class="modalOverlay hidden">
+        <div class="modalWindow">
+            <header class="modalHeader">
+                <h3>Update Student Academic Entry</h3>
+                <button id="closeModalButton" class="modalCloseIcon">&times;</button>
+            </header>
+            <div class="modalBody">
+                <form id="editStudentForm" novalidate>
+                    <input type="hidden" id="editRowDatabaseId">
+
+                    <div class="formGrid">
+                        <div class="formGroup">
+                            <label for="editStudentName">Full Name</label>
+                            <input type="text" id="editStudentName" required>
+                        </div>
+
+                        <div class="formGroup">
+                            <label for="editStudentMajor">Major/Program</label>
+                            <select id="editStudentMajor" required>
+                                <option value="Computer Science">Computer Science</option>
+                                <option value="Information Technology">Information Technology</option>
+                                <option value="Cybersecurity">Cybersecurity</option>
+                                <option value="Data Science">Data Science</option>
+                                <option value="Software Engineering">Software Engineering</option>
+                            </select>
+                        </div>
+
+                        <div class="formGroup">
+                            <label for="editStudentCourse">Course Assignment</label>
+                            <select id="editStudentCourse" required>
+                                </select>
+                        </div>
+
+                        <div class="formGroup">
+                            <label for="editStudentMarks">Evaluated Marks</label>
+                            <input type="number" id="editStudentMarks" min="0" max="100" required>
+                        </div>
+                    </div>
+
+                    <div class="modalActionsPanel">
+                        <button type="button" id="ButtonCancelModal" class="modalActionButton cancelButton">Remove Changes</button>
+                        <button type="submit" class="modalActionButton saveButton">Save Changes</button>
+                    </div>
+                    
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <button class="scrollTopWidget" onclick="window.scrollTo({ top: 0, behavior: 'smooth' })" aria-label="Scroll up">&#8679;</button>
+</body>
+</html>
