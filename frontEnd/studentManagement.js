@@ -72,6 +72,7 @@ async function loadStudents(){
         const response = await fetch(API_BASE)
         if(!response.ok) throw new Error(`HTTP ${response.status}`);
         students = await response.json()
+        students = students.map(attachGradeInfo)
         renderTable();
     } catch (error) {
         console.error('Error loading students: ', error)
@@ -223,6 +224,18 @@ function calculateGrade(mark) {
 
 }
 
+// Attach calculated grade information
+function attachGradeInfo(student){
+    const gradeInfo = calculateGrade(student.marks)
+
+    student.grade = gradeInfo.grade;
+    student.meaning = gradeInfo.meaning;
+    student.color = gradeInfo.className;
+    student.status = gradeInfo.status;
+
+    return student;
+}
+
 
 // Validation
 function validateForm() {
@@ -299,6 +312,7 @@ addStudentForm.addEventListener("submit", async function(event) {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const savedStudent = await response.json()
+        attachGradeInfo(savedStudent)
         students.push(savedStudent)
         renderTable()
         addStudentForm.reset()
@@ -308,8 +322,8 @@ addStudentForm.addEventListener("submit", async function(event) {
         showNotification("Failed to add student.", false)
     }
 
-    studentCourse.innerHTML =
-        "<option value=''>-- Awaiting Program Selection --</option>";
+    /*studentCourse.innerHTML =
+        "<option value=''>-- Awaiting Program Selection --</option>";*/
 
 });
 
@@ -424,7 +438,7 @@ editStudentMajor.addEventListener("change", function () {
 
 
 // Open Modal Edit
-function openEditModal(index) {
+function openEditModal(id) {
     const student = students.find(s => s._id === id)
 
     editRowDatabaseId.value = student._id;
@@ -524,6 +538,7 @@ editStudentForm.addEventListener("submit", async function (event) {
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const updatedStudent = await response.json()
+        attachGradeInfo(updatedStudent)
         const index = students.findIndex(s => s._id === id)
         students[index] = updatedStudent
 
@@ -671,7 +686,9 @@ function updateStatistics() {
 
     const total = students.length;
 
-    totalStudents.textContent = total;
+    const uniqueStudentCount = new Set(students.map(s => s.studentId)).size;
+
+    totalStudents.textContent = uniqueStudentCount
 
     if (total === 0) {
 

@@ -31,9 +31,19 @@ const setStudent = asyncHandler(async (req, res) => {
         throw new Error('Please fill in all required fields')
     }
 
-    const prefix = prefixes[major] || "ST"
-    const count = await Student.countDocuments({ major })
-    const sutdentId = `${prefix}${1001 + count}`
+    const existingRecord = await Student.findOne({
+        name: { $regex: `^${name.trim()}$`, $options: 'i'}
+    }).sort({ createdAt: 1 })
+
+    let studentId
+
+    if(existingRecord){
+        studentId= existingRecord.studentId
+    } else {
+        const prefix = prefixes[major] || "ST"
+        const existingIds= await Student.distinct('studentId', { major })
+        studentId = `${prefix}${1001 + existingIds.length}`
+    }
 
     const student = await Student.create({ studentId, name, major, course, marks })
 
