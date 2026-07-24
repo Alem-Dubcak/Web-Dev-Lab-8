@@ -9,23 +9,35 @@ const Student = require('../models/studentModel')
 const getStudents = asyncHandler(async (req, res) => {
     const student = await Student.find()
 
-    res.status(200).json(student) //find out how to implement with front end
+    res.status(200).json(student)
 })
+
+const prefixes = {
+    "Computer Science": "CS",
+    "Information Technology": "IT",
+    "Cybersecurity": "CY",
+    "Data Science": "DS",
+    "Software Engineering": "SE"
+}
 
 // @desc Set student
 // @route POST /api/student
 // @access Private
 const setStudent = asyncHandler(async (req, res) => {
-    if(!req.body?.text){ //Will probably have to change ".text"
+    const { name, major, course, marks } = req.body
+
+    if(!name || !major || !course || marks === undefined){
         res.status(400)
-        throw new Error('Please add a text field') //Need to change eventually
+        throw new Error('Please fill in all required fields')
     }
 
-    const student = await Student.create({
-        text: req.body.text//fix using student model
-    })
+    const prefix = prefixes[major] || "ST"
+    const count = await Student.countDocuments({ major })
+    const sutdentId = `${prefix}${1001 + count}`
 
-    res.status(200).json(student) //find out how to implement with front end
+    const student = await Student.create({ studentId, name, major, course, marks })
+
+    res.status(200).json(student)
 })
 
 // @desc Get oneStudent
@@ -39,7 +51,7 @@ const getOneStudent = asyncHandler(async (req, res) => {
         throw new Error('Student not found')
     }
 
-    res.status(200).json(student) //find out how to implement with front end
+    res.status(200).json(student)
 })
 
 // @desc update student
@@ -53,9 +65,15 @@ const updateStudent = asyncHandler(async (req, res) => {
         throw new Error('Student not found')
     }
 
-    const updatedStudent = await Student.findByIdAndUpdate(req.params.id, req.body, { new: true }) //will have to change to meet the schema
+    const { name, major, course, marks } = req.body; 
 
-    res.status(200).json(updatedStudent) //find out how to implement with front end
+    const updatedStudent = await Student.findByIdAndUpdate(
+        req.params.id, 
+        { name, major, course, marks }, 
+        { new: true }
+    )
+
+    res.status(200).json(updatedStudent)
 })
 
 // @desc delete student
@@ -71,7 +89,7 @@ const deleteStudent = asyncHandler(async (req, res) => {
 
     await student.deleteOne()
 
-    res.status(200).json({ id: req.params.id }) //find out how to implement with front end
+    res.status(200).json({ id: req.params.id })
 })
 
 module.exports = { getStudents, setStudent, getOneStudent, updateStudent, deleteStudent }

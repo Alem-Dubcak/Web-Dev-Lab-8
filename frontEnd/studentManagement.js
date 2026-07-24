@@ -5,6 +5,8 @@
 let students = [];
 let nextStudentNumber = 1001;
 
+const API_BASE = 'http://localhost:5000/api/student'
+
 
 // Courses for each Major
 const majorCourses = {
@@ -63,6 +65,21 @@ if (!studentTableBody) {
     table.appendChild(studentTableBody);
 
 }
+
+//Get students fetch() call, loads on start
+async function loadStudents(){
+    try{
+        const response = await fetch(API_BASE)
+        if(!response.ok) throw new Error(`HTTP ${response.status}`);
+        students = await response.json()
+        renderTable();
+    } catch (error) {
+        console.error('Error loading students: ', error)
+        showNotification('Failed to load students.', false)
+    }
+}
+
+
 
 
 // Student ID Generator
@@ -254,8 +271,8 @@ function validateForm() {
 }
 
 
-// Add Student
-addStudentForm.addEventListener("submit", function(event) {
+// Add Student, uses POST fetch() call
+addStudentForm.addEventListener("submit", async function(event) {
 
     event.preventDefault();
 
@@ -263,36 +280,33 @@ addStudentForm.addEventListener("submit", function(event) {
         return;
 
     const marks = Number(studentMarks.value);
-
     const gradeInfo = calculateGrade(marks);
 
-    const student = {
-
-        id: generateStudentID(studentMajor.value),
-
+    const newStudent = {
         name: studentName.value.trim(),
-
         major: studentMajor.value,
-
         course: studentCourse.value,
+        marks: marks
+    }
 
-        marks: marks,
+    try {
+        const response = await fetch(API_BASE, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newStudent)
+        })
 
-        grade: gradeInfo.grade,
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-        meaning: gradeInfo.meaning,
-
-        color: gradeInfo.className,
-
-        status: gradeInfo.status
-
-    };
-
-    students.push(student);
-
-    renderTable();
-
-    addStudentForm.reset();
+        const savedStudent = await response.json()
+        students.push(savedStudent)
+        renderTable()
+        addStudentForm.reset()
+        showNotification("Student record added successfully.")
+    } catch (error) {
+        console.error(error)
+        showNotification("Failed to add student.", false)
+    }
 
     studentCourse.innerHTML =
         "<option value=''>-- Awaiting Program Selection --</option>";
@@ -311,7 +325,7 @@ function renderTable() {
 
         row.innerHTML = `
 
-        <td>${student.id}</td>
+        <td>${student.studentId}</td>
 
         <td>${student.name}</td>
 
@@ -411,10 +425,9 @@ editStudentMajor.addEventListener("change", function () {
 
 // Open Modal Edit
 function openEditModal(index) {
+    const student = students.find(s => s._id === id)
 
-    const student = students[index];
-
-    editRowDatabaseId.value = index;
+    editRowDatabaseId.value = student._id;
 
     editStudentName.value = student.name;
     editStudentMajor.value = student.major;
@@ -457,7 +470,7 @@ window.addEventListener("click", function (event) {
 
 
 // Save Edited Student Info
-editStudentForm.addEventListener("submit", function (event) {
+editStudentForm.addEventListener("submit", async function (event) {
 
     event.preventDefault();
 
@@ -488,57 +501,62 @@ editStudentForm.addEventListener("submit", function (event) {
 
     }
 
-    const index = Number(editRowDatabaseId.value);
+    //const index = Number(editRowDatabaseId.value);
+    const id = editRowDatabaseId.value; 
+
+    const updatedFields = {
+        name: editStudentName.value.trim(),
+        major: editStudentMajor.value,
+        course: editStudentCourse.value,
+        marks: marks
+    }
 
     // Recalculate grade info
-    const gradeInfo = calculateGrade(marks);
+    //const gradeInfo = calculateGrade(student.marks);
 
-    // Replace existing student information
-    students[index] = {
+    try{
+        const response = await fetch(`${API_BASE}/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedFields)
+        })
 
-        id: students[index].id,
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-        name: editStudentName.value.trim(),
+        const updatedStudent = await response.json()
+        const index = students.findIndex(s => s._id === id)
+        students[index] = updatedStudent
 
-        major: editStudentMajor.value,
-
-        course: editStudentCourse.value,
-
-        marks: marks,
-
-        grade: gradeInfo.grade,
-
-        meaning: gradeInfo.meaning,
-
-        color: gradeInfo.className,
-
-        status: gradeInfo.status
-
-    };
-
-    // Refresh table, close modal
-    renderTable();
-
-    closeEditModal();
-
+        renderTable();
+        closeEditModal();
+        showNotification("Student record updated successfully.")
+    } catch (error) {
+        console.error(error)
+        showNotification("Failed to update student.", false)
+    }
 });
 
 
 
 // Delete Student Record
-function deleteStudent(index) {
-
+deleteStudent = async function(id) {
     const answer = confirm("Delete this student record?");
 
     if (!answer) {
-
         return;
-
     }
 
-    students.splice(index, 1);
+    try {
+        const response = await fetch(`${API_BASE}/${id}`, { method: 'DELETE' })
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
-    renderTable();
+        students = students.filter(s => s._id !== id)
+        renderTable()
+        showNotification("Student deleted sucessfully.")
+    } catch (error) {
+        console.error(error)
+        showNotification("Failed to delete student.", false)
+    }
 
 }
 
@@ -556,7 +574,7 @@ renderTable = function () {
 
         row.innerHTML = `
 
-        <td>${student.id}</td>
+        <td>${student.studentId}</td>
 
         <td>${student.name}</td>
 
@@ -584,11 +602,11 @@ renderTable = function () {
 
             <div class="actionButtonGroup">
 
-                <button class="actionBtn editBtn" data-index="${index}">
+                <button class="actionBtn editBtn" data-id="${student._id}">
                     Edit
                 </button>
 
-                <button class="actionBtn deleteBtn" data-index="${index}">
+                <button class="actionBtn deleteBtn" data-id="${student._id}">
                     Delete
                 </button>
 
@@ -607,7 +625,7 @@ renderTable = function () {
 
         button.addEventListener("click", function () {
 
-            openEditModal(Number(this.dataset.index));
+            openEditModal(this.dataset.id);
 
         });
 
@@ -618,7 +636,7 @@ renderTable = function () {
 
         button.addEventListener("click", function () {
 
-            deleteStudent(Number(this.dataset.index));
+            deleteStudent(this.dataset.id);
 
         });
 
@@ -803,7 +821,7 @@ function filterStudents() {
     students.forEach((student, index) => {
 
         const matchesSearch =
-            student.id.toLowerCase().includes(searchText) ||
+            student.studentId.toLowerCase().includes(searchText) ||
             student.name.toLowerCase().includes(searchText) ||
             student.course.toLowerCase().includes(searchText);
 
@@ -822,7 +840,7 @@ function filterStudents() {
 
         row.innerHTML = `
 
-        <td>${student.id}</td>
+        <td>${student.studentId}</td>
 
         <td>${student.name}</td>
 
@@ -850,11 +868,11 @@ function filterStudents() {
 
             <div class="actionButtonGroup">
 
-                <button class="actionBtn editBtn" data-index="${index}">
+                <button class="actionBtn editBtn" data-id="${student._id}">
                     Edit
                 </button>
 
-                <button class="actionBtn deleteBtn" data-index="${index}">
+                <button class="actionBtn deleteBtn" data-id="${student._id}">
                     Delete
                 </button>
 
@@ -872,7 +890,7 @@ function filterStudents() {
 
         button.addEventListener("click", function () {
 
-            openEditModal(Number(this.dataset.index));
+            openEditModal(this.dataset.id);
 
         });
 
@@ -882,7 +900,7 @@ function filterStudents() {
 
         button.addEventListener("click", function () {
 
-            deleteStudent(Number(this.dataset.index));
+            deleteStudent(this.dataset.id);
 
         });
 
@@ -944,13 +962,13 @@ function showNotification(message, isSuccess = true) {
 
 
 //Notification After Adding a Student
-const originalAddEvent = addStudentForm.onsubmit;
+/*const originalAddEvent = addStudentForm.onsubmit;
 
 addStudentForm.addEventListener("submit", function () {
 
     showNotification("Student record added successfully.");
 
-});
+});*/
 
 
 // Export Buttons
@@ -990,37 +1008,8 @@ excelImportFile.addEventListener("change", function () {
 
 });
 
-
-
-// Notification After Change
-const oldDeleteStudent = deleteStudent;
-
-deleteStudent = function (index) {
-
-    const confirmed = confirm("Delete this student record?");
-
-    if (!confirmed)
-        return;
-
-    students.splice(index, 1);
-
-    renderTable();
-
-    showNotification("Student deleted successfully.");
-
-};
-
-const oldOpenModal = openEditModal;
-
-editStudentForm.addEventListener("submit", function () {
-
-    showNotification("Student record updated successfully.");
-
-});
-
-
 // Initialize Application
-renderTable();
+loadStudents();
 
 updateStatistics();
 
