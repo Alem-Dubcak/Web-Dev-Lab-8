@@ -2,7 +2,7 @@
 
 ## Project Description
 
-The Student Performance Management System is a full-stack web application that allows educators to add, view, update, and delete student academic records.
+The Student Performance Management System is a web application that allows educators to add, view, update, and delete student academic records.
 
 ## Technologies Used
 
