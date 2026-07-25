@@ -6,21 +6,21 @@ The Student Performance Management System is a full-stack web application that a
 
 ## Technologies Used
 
-HTML5
-CSS3
-JavaScript
-Node.js
-Express
-Mongoose
-MongoDB
+* HTML5
+* CSS3
+* JavaScript
+* Node.js
+* Express
+* Mongoose
+* MongoDB
 
 ## Installation
 
 Clone project and install:
 
-git clone -b backend https://github.com/Alem-Dubcak/Web-Dev-Lab-8.git
-cd Web-Dev-Lab-8/backEnd
-npm install
+* git clone -b backend https://github.com/Alem-Dubcak/Web-Dev-Lab-8.git
+* cd Web-Dev-Lab-8/backEnd
+* npm install
 
 ## Running the Server
 
@@ -51,13 +51,13 @@ mongodb://localhost:27017/studentManager
 
 ## Main Features Implemented
 
-Add, view, edit, and delete student records
-MongoDB database storage
-Automatic grade and pass/fail calculation
-Dynamic course selection based on major
-Input validation
-Search and filtering
-Class performance statistics and grade distribution
-PDF and Excel report export
-Excel import
-Responsive user interface
+* Add, view, edit, and delete student records
+* MongoDB database storage
+* Automatic grade and pass/fail calculation
+* Dynamic course selection based on major
+* Input validation
+* Search and filtering
+* Class performance statistics and grade distribution
+* PDF and Excel report export
+* Excel import
+* Responsive user interface
