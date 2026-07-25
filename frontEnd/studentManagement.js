@@ -321,9 +321,6 @@ addStudentForm.addEventListener("submit", async function(event) {
         showNotification("Failed to add student.", false)
     }
 
-    /*studentCourse.innerHTML =
-        "<option value=''>-- Awaiting Program Selection --</option>";*/
-
 });
 
 
@@ -796,10 +793,6 @@ function updateStatistics() {
 
 }
 
-
-
-// Update Dashboard Automatically
-
 // Save current version of renderTable()
 const previousRenderTable = renderTable;
 
@@ -974,18 +967,6 @@ function showNotification(message, isSuccess = true) {
     }, 3000);
 
 }
-
-
-
-//Notification After Adding a Student
-/*const originalAddEvent = addStudentForm.onsubmit;
-
-addStudentForm.addEventListener("submit", function () {
-
-    showNotification("Student record added successfully.");
-
-});*/
-
 
 // Export Buttons
 const ButtonExportPdf = document.getElementById("ButtonExportPdf");
