@@ -46,7 +46,6 @@ const majorCourses = {
 
 // HTML Elements
 const addStudentForm = document.getElementById("addStudentForm");
-
 const studentName = document.getElementById("studentName");
 const studentMajor = document.getElementById("studentMajor");
 const studentCourse = document.getElementById("studentCourse");
@@ -996,7 +995,32 @@ ButtonExportPdf.addEventListener("click", function (event) {
 
     event.preventDefault();
 
-    alert("PDF Export will be connected to the backend later.");
+    if (students.length === 0) {
+        alert("There are no student records to export")
+        return;
+    }
+
+    const { jsPDF } = window.jspdf
+    const doc = new jsPDF()
+
+    doc.setFontSize(16)
+    doc.text("Student Management Report", 14, 15)
+    doc.setFontSize(10)
+    doc.text(`Generated: ${new Date().toLocaleString()}`, 14, 22)
+
+    const tableRows = students.map(function(s) {
+        return [s.studentId, s.name, s.major, s.course, s.marks, s.grade, s.status]
+    })
+
+    doc.autoTable({
+        head: [["Student ID", "Name", "Major", "Course", "Marks", "Grade", "Status"]],
+        body: tableRows,
+        starty: 28,
+        styles: { fontSize: 8 },
+        headStyles: { fillColor: [0, 90, 156] }
+    })
+
+    doc.save(`student-report-${Date.now()}.pdf`)
 
 });
 
@@ -1004,8 +1028,28 @@ ButtonExportExcel.addEventListener("click", function (event) {
 
     event.preventDefault();
 
-    alert("Excel Export will be connected to the backend later.");
+    if (students.length === 0){
+        alert("There are no student records to export")
+        return;
+    }
 
+    const exportRows = students.map(function (s) {
+        return {
+            "Student ID": s.studentId,
+            "Name": s.name,
+            "Major": s.major,
+            "Course": s.course,
+            "Marks": s.marks,
+            "Grade": s.grade,
+            "Status": s.status
+        };
+    })
+
+    const worksheet = XLSX.utils.json_to_sheet(exportRows)
+    const workbook = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Students")
+
+    XLSX.writeFile(workbook, `student-report-${Date.now()}.xlsx`)
 });
 
 
@@ -1015,13 +1059,75 @@ const excelImportFile = document.getElementById("excelImportFile");
 
 excelImportFile.addEventListener("change", function () {
 
-    if (this.files.length === 0)
+    if (this.files.length === 0){
         return;
+    }
+    
+    const file = this.files[0]
+    const reader = new FileReader()
 
-    alert(
-        this.files[0].name +
-        " selected.\n\nExcel import can be connected to MongoDB later."
-    );
+    reader.onload = async function (event) {
+        try {
+            const data = new Uint8Array(event.target.result)
+            const workbook = XLSX.read(data, { type: "array" })
+            const sheetName = workbook.SheetNames[0]
+            const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName])
+
+            if (rows.length === 0) {
+                alert("That file doesn't have any row to import.")
+                return;
+            }
+
+            let successCount = 0
+            let failCount = 0
+
+            for (const row of rows) {
+                const name = row["Name"] ?? row["name"]
+                const major = row["Major"] ?? row["major"]
+                const course = row["Course"] ?? row["course"]
+                const marks = Number(row["Marks"] ?? row["marks"])
+
+                if (!name || !major || !course || isNaN(marks)){
+                    failCount++
+                    continue;
+                }
+
+                try {
+                    const response = await fetch(API_BASE, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ name, major, course, marks })
+                    });
+
+                    if (!response.ok) {
+                        failCount++
+                        continue;
+                    }
+
+                    successCount++
+
+                } catch (error) {
+                    failCount++
+                }
+
+            }
+
+            await loadStudents()
+            updateStatistics()
+            updateCourseList()
+
+            alert(`Import complete: ${successCount} added, ${failCount} skipped.`)
+            
+        } catch (error){
+            console.error(error)
+            alert("Couldn't read that file. Make sure it's a valid .xlsx or .xls file.")
+                
+        } finally {
+            excelImportFile.value = ""
+        }
+    };
+
+    reader.readAsArrayBuffer(file);
 
 });
 
